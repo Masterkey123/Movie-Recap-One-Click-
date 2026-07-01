@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recap - One Click Automation</title>
+    <style>
+        :root {
+            --primary: #00ffcc;
+            --bg-dark: #0f172a;
+            --card-bg: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #334155;
+        }
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            background: #0f172a;
+            color: white;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        .btn-submit {
+            width: 100%;
+            background: var(--primary);
+            color: #0f172a;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+        .btn-submit:hover {
+            background: #00ccaa;
+            box-shadow: 0 0 15px rgba(0,255,204,0.4);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎬 Movie Recap - One Click Generator</h2>
+    
+    <div class="form-group">
+        <label>YouTube Movie Link</label>
+        <input type="text" id="ytLink" placeholder="https://www.youtube.com/watch?v=...">
+    </div>
+
+    <div class="form-group">
+        <label>Narration Voice (အသံရွေးချယ်ရန်)</label>
+        <select id="voiceLanguage">
+            <option value="my_male">Burmese (မြန်မာအမျိုးသား - AI)</option>
+            <option value="my_female">Burmese (မြန်မာအမျိုးသမီး - AI)</option>
+            <option value="en_us">English (US Male)</option>
+            <option value="en_uk">English (UK Female)</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Video Duration</label>
+        <select id="duration">
+            <option value="180">3 Minutes Fixed (Copyright Safe)</option>
+        </select>
+    </div>
+
+    <button class="btn-submit" onclick="startAutomation()">Generate Auto Video</button>
+</div>
+
+<script>
+    function startAutomation() {
+        const link = document.getElementById('ytLink').value;
+        const voice = document.getElementById('voiceLanguage').value;
+        if(!link) { alert("Please insert YouTube Link!"); return; }
+        
+        alert("Automation Started!\nSending payload to Local/Server Automation Script...");
+        // ဤနေရာတွင် မိမိ Local Python API သို့ Fetch လုပ်ပြီး ချိတ်ဆက်နိုင်သည်
+    }
+</script>
+
+</body>
+</html>
