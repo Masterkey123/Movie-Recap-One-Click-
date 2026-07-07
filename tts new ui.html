@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini TTS Pro Studio - Auto Verify Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=Padauk:wght@400;700&display=swap');
+        
+        #blgr-tts-page { 
+            font-family: 'Inter', 'Padauk', sans-serif; 
+            color: #1e293b;
+        }
+
+        .blgr-input-clean {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .blgr-input-clean:focus {
+            outline: none;
+            border-color: #6366f1;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.05);
+        }
+
+        .blgr-tab-btn.active {
+            background-color: #6366f1;
+            color: white;
+        }
+
+        .blgr-loading-wave { display: flex; align-items: flex-end; gap: 4px; height: 18px; }
+        .blgr-wave-bar { width: 3px; background: white; border-radius: 4px; animation: blgr-wave-anim 0.6s infinite alternate; }
+        .blgr-wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .blgr-wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        @keyframes blgr-wave-anim { from { height: 4px; } to { height: 18px; } }
+
+        /* Ad Slot Placeholder Styling */
+        .ads-placeholder {
+            background: #fdfdfd;
+            border: 1px dashed #e5e7eb;
+            color: #94a3b8;
+            text-align: center;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Verification Indicator Animation */
+        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+        .verified-key { border-color: #22c55e !important; animation: pulse-green 2s infinite; }
+    </style>
+</head>
+<body class="bg-white">
+
+    <div id="blgr-tts-page" class="max-w-3xl mx-auto px-4 py-6 md:py-12 bg-white">
+        
+        <!-- App Title Section -->
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-100 pb-8">
+            <div>
+                <h1 class="text-3xl font-black tracking-tight text-slate-900 leading-none">Gemini TTS <span class="text-indigo-600">Studio Pro</span></h1>
+                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-2">Cloud AI Audio Synchronization Engine</p>
+            </div>
+            <div id="badgeContainer">
+                <span id="badgeUI" class="text-[10px] font-black px-4 py-1.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100 tracking-wider transition-all duration-300">2.5 PRO PREVIEW</span>
+            </div>
+        </div>
+
+        <!-- TOP AD PLACEMENT -->
+        <div class="ads-placeholder">
+            [ AdSense - Top Header Ad ]
+        </div>
+
+        <div class="space-y-10">
+            <!-- 1. Authentication with Auto-Verify -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">01</span>
+                        <label class="text-[11px] font-black uppercase text-slate-500 tracking-widest">Authentication</label>
+                    </div>
+                    <span id="verifyStatus" class="text-[9px] font-black uppercase tracking-tighter text-slate-300">Awaiting Key</span>
+                </div>
+                <div class="relative">
+                    <input type="password" id="apiKeyInput" oninput="blgr_autoVerify()" placeholder="Gemini API Key will auto-verify..." class="blgr-input-clean shadow-sm pr-12">
+                    <div id="keyLoading" class="absolute right-4 top-3.5 hidden">
+                        <i class="fas fa-circle-notch fa-spin text-indigo-500 text-sm"></i>
+                    </div>
+                    <div id="keyCheck" class="absolute right-4 top-3.5 hidden">
+                        <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Main Controls -->
+            <div class="space-y-4 pt-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">02</span>
+                    <label class="text-[11px] font-black uppercase text-slate-500 tracking-widest">Synthesis Engine</label>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <select id="engineSelect" onchange="blgr_refreshUI()" class="blgr-input-clean font-bold text-slate-700 shadow-sm">
+                        <option value="gemini-2.5-pro-preview-tts">Gemini 2.5 Pro (Master Fidelity)</option>
+                        <option value="gemini-2.5-flash-preview-tts">Gemini 2.5 Flash (Performance)</option>
+                    </select>
+                    <div class="bg-slate-100 p-1 rounded-2xl flex">
+                        <button onclick="blgr_setMode('text')" id="tabText" class="blgr-tab-btn active flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all">Direct Text</button>
+                        <button onclick="blgr_setMode('srt')" id="tabSrt" class="blgr-tab-btn flex-1 py-2.5 text-xs font-bold uppercase rounded-xl text-slate-500 transition-all">SRT Batch</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Voice Settings -->
+            <div class="space-y-4 pt-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">03</span>
+                    <label class="text-[11px] font-black uppercase text-slate-500 tracking-widest">Narrative Profile</label>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="voiceChoice" class="blgr-input-clean font-medium text-slate-700 shadow-sm"></select>
+                    <select id="styleChoice" onchange="blgr_togglePrompt()" class="blgr-input-clean font-medium text-slate-700 shadow-sm">
+                        <option value="general">Natural / General</option>
+                        <option value="story">Expressive Storytelling</option>
+                        <option value="news">Formal News Report</option>
+                        <option value="poem">Poetic Recitation</option>
+                        <option value="voiceover">Commercial Voice Over</option>
+                        <option value="custom">Custom Style Prompt</option>
+                    </select>
+                </div>
+                
+                <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="text-[10px] font-black uppercase text-slate-400">Temperature</label>
+                            <span id="tempValUI" class="text-xs font-bold text-indigo-600 bg-white px-2 py-0.5 rounded shadow-sm">1.0</span>
+                        </div>
+                        <input type="range" id="tempSlider" min="0" max="2" step="0.1" value="1.0" oninput="document.getElementById('tempValUI').textContent = parseFloat(this.value).toFixed(1)" class="w-full accent-indigo-600 h-1.5 rounded-lg appearance-none bg-slate-200">
+                    </div>
+                    <div id="delaySection" class="hidden">
+                        <div class="flex justify-between items-center mb-3">
+                            <label class="text-[10px] font-black uppercase text-slate-400">Batch Delay</label>
+                            <span id="delayValUI" class="text-xs font-bold text-indigo-600 bg-white px-2 py-0.5 rounded shadow-sm">2.0s</span>
+                        </div>
+                        <input type="range" id="delaySlider" min="1.5" max="10" step="0.5" value="2.0" oninput="document.getElementById('delayValUI').textContent = this.value + 's'" class="w-full accent-indigo-600 h-1.5 rounded-lg appearance-none bg-slate-200">
+                    </div>
+                </div>
+
+                <div id="customPromptBox" class="hidden">
+                    <input type="text" id="customStyleInput" placeholder="Style Instructions (e.g. Energetic, whispering, deep tone...)" class="blgr-input-clean border-indigo-100 bg-indigo-50/20 text-indigo-900">
+                </div>
+            </div>
+
+            <!-- 4. Content Input -->
+            <div class="space-y-4 pt-4">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">04</span>
+                    <label class="text-[11px] font-black uppercase text-slate-500 tracking-widest">Input Preparation</label>
+                </div>
+                
+                <div id="textModeBox">
+                    <div class="relative">
+                        <textarea id="mainTextArea" rows="6" class="blgr-input-clean font-[Padauk] leading-relaxed resize-none shadow-sm" placeholder="Paste your text here for professional voice transformation..."></textarea>
+                        <div class="absolute bottom-3 right-4 text-[10px] font-black text-slate-300 bg-white/80 px-2 py-0.5 rounded-full border border-slate-50" id="charCounter">0</div>
+                    </div>
+                </div>
+
+                <div id="srtModeBox" class="hidden">
+                    <div onclick="document.getElementById('srtUploader').click()" class="border-2 border-dashed border-slate-200 rounded-3xl p-12 text-center hover:bg-slate-50 hover:border-indigo-400 transition-all cursor-pointer group">
+                        <i class="fas fa-file-waveform text-slate-300 text-4xl mb-4 group-hover:text-indigo-400 transition-colors"></i>
+                        <p id="srtFileLabel" class="text-sm text-slate-500 font-bold">Import .SRT Subtitle File</p>
+                        <p class="text-[10px] text-slate-400 mt-2 italic">Batch processing with automatic timestamp synchronization.</p>
+                        <input type="file" id="srtUploader" accept=".srt" class="hidden" onchange="blgr_loadSRT(this)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="pt-6">
+                <button onclick="blgr_initSynthesis()" id="mainSubmitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold py-5 rounded-2xl shadow-xl shadow-indigo-100 transition-all flex items-center justify-center gap-4 group">
+                    <span id="btnLabelUI">EXECUTE SYNTHESIS</span>
+                    <i class="fas fa-magic text-indigo-300 group-hover:rotate-12 transition-transform"></i>
+                </button>
+                <div class="mt-4 text-center">
+                    <p id="statusMsgUI" class="text-[10px] font-black text-slate-400 uppercase tracking-widest min-h-[16px]"></p>
+                </div>
+                <div id="quotaAlertBox" class="mt-6 p-6 bg-red-50 rounded-2xl border border-red-100 hidden">
+                    <h4 class="text-xs font-black text-red-900 uppercase mb-2">Cloud Quota Fault</h4>
+                    <p class="text-[11px] text-red-700 leading-relaxed">
+                        အစ်ကို့ရဲ့ Key က အလုပ်လုပ်ပေမဲ့ Quota "0" ဖြစ်နေပါတယ်။ Google Cloud Console > APIs & Services > Quotas ကိုသွားပြီး <b>Generative Language API</b> ရဲ့ <b>Requests per minute</b> ကို အနည်းဆုံး 15 သို့မဟုတ် 30 လို့ ပြောင်းပေးပါ။
+                    </p>
+                </div>
+            </div>
+
+            <!-- MIDDLE AD PLACEMENT -->
+            <div class="ads-placeholder">
+                [ AdSense - Content Middle Ad ]
+            </div>
+
+            <!-- Playback Panel -->
+            <div id="playbackCard" class="hidden bg-slate-900 rounded-[32px] p-8 md:p-10 text-white shadow-2xl transition-all duration-500">
+                <div class="flex items-center justify-between mb-8 border-b border-slate-800 pb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></div>
+                        <span class="text-[10px] font-black tracking-[0.2em] text-slate-400 uppercase">Master WAV Generated</span>
+                    </div>
+                    <a id="masterDownloadLink" class="text-[10px] bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 rounded-xl font-bold transition-all shadow-lg cursor-pointer">DOWNLOAD FILE</a>
+                </div>
+                <audio id="audioEngine" controls class="w-full h-12 mb-8 filter grayscale opacity-90"></audio>
+                <button onclick="document.getElementById('audioEngine').play()" class="w-full bg-white text-slate-900 py-4 rounded-2xl text-xs font-black flex items-center justify-center gap-3 hover:bg-slate-50 transition-all shadow-inner">
+                    <i class="fas fa-play-circle text-xl"></i> REVIEW MASTER PLAYBACK
+                </button>
+            </div>
+
+            <!-- SEO Content Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 pt-10 border-t border-slate-100">
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest border-l-4 border-indigo-600 pl-3">Powerful Capabilities</h3>
+                    <ul class="text-xs text-slate-500 space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-microchip text-indigo-500 mt-1"></i>
+                            <span><b>Auto-Verify Key:</b> Real-time API authentication to ensure seamless connection without manual check clicks.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-sync text-indigo-500 mt-1"></i>
+                            <span><b>SRT Timestep Sync:</b> Perfect for content creators needing precise audio overlay for subtitled videos.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-user-astronaut text-indigo-500 mt-1"></i>
+                            <span><b>2.5 Pro Technology:</b> Access to the latest large language model voice synthesis with high emotional intelligence.</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="space-y-4">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest border-l-4 border-indigo-600 pl-3">User Instructions</h3>
+                    <div class="text-xs text-slate-500 space-y-3 leading-relaxed">
+                        <p>1. Paste your Gemini API key; it will verify automatically. Green indicator means your Tier 1 account is active.</p>
+                        <p>2. Select either Flash (Fast) or Pro (Highest Quality) models based on your project requirements.</p>
+                        <p>3. Choose your voice persona and adjust the temperature to fine-tune speech variability.</p>
+                        <p>4. Process your data and download the master WAV file. Use for commercial or personal production.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BOTTOM AD PLACEMENT -->
+            <div class="ads-placeholder">
+                [ AdSense - Footer Post Ad ]
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const MASTER_FREQ = 24000;
+        const MASTER_VOICES = [
+            { id: "Puck", g: "Male" }, { id: "Charon", g: "Male" },
+            { id: "Zephyr", g: "Female" }, { id: "Kore", g: "Female" },
+            { id: "Fenrir", g: "Male" }, { id: "Aoede", g: "Female" },
+            { id: "Orus", g: "Male" }
+        ];
+
+        let blgr_mode = 'text';
+        let blgr_srt_list = [];
+        let verifyTimeout = null;
+
+        window.onload = () => {
+            const vSelect = document.getElementById('voiceChoice');
+            MASTER_VOICES.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.id; opt.text = `${v.id} (${v.g})`;
+                vSelect.appendChild(opt);
+            });
+            
+            const savedKey = localStorage.getItem('blgr_auto_verify_key_v13');
+            if (savedKey) {
+                document.getElementById('apiKeyInput').value = savedKey;
+                blgr_autoVerify(true); // Immediate verify on load
+            }
+            
+            document.getElementById('mainTextArea').addEventListener('input', function() {
+                document.getElementById('charCounter').textContent = this.value.length;
+            });
+        };
+
+        // --- NEW: AUTO VERIFY LOGIC ---
+        function blgr_autoVerify(immediate = false) {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            const status = document.getElementById('verifyStatus');
+            const loading = document.getElementById('keyLoading');
+            const check = document.getElementById('keyCheck');
+            const input = document.getElementById('apiKeyInput');
+
+            // Reset indicators
+            input.classList.remove('verified-key');
+            check.classList.add('hidden');
+            loading.classList.add('hidden');
+            status.textContent = "Validating...";
+            status.className = "text-[9px] font-black uppercase tracking-tighter text-indigo-400";
+
+            if (verifyTimeout) clearTimeout(verifyTimeout);
+            
+            if (key.length < 10) {
+                status.textContent = "Awaiting Key";
+                status.className = "text-[9px] font-black uppercase tracking-tighter text-slate-300";
+                return;
+            }
+
+            const delay = immediate ? 0 : 1000; // Delay for typing UX
+            verifyTimeout = setTimeout(async () => {
+                loading.classList.remove('hidden');
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                    const data = await res.json();
+                    loading.classList.add('hidden');
+                    if (data.models) {
+                        localStorage.setItem('blgr_auto_verify_key_v13', key);
+                        input.classList.add('verified-key');
+                        check.classList.remove('hidden');
+                        status.textContent = "Cloud Active";
+                        status.className = "text-[9px] font-black uppercase tracking-tighter text-green-500";
+                        blgr_updateStatus("API KEY SYNCED", "text-emerald-500");
+                    } else {
+                        throw new Error();
+                    }
+                } catch (e) {
+                    loading.classList.add('hidden');
+                    status.textContent = "Invalid Key";
+                    status.className = "text-[9px] font-black uppercase tracking-tighter text-red-400";
+                }
+            }, delay);
+        }
+
+        function blgr_setMode(m) {
+            blgr_mode = m;
+            document.getElementById('tabText').className = `blgr-tab-btn flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all ${m === 'text' ? 'active' : 'text-slate-500'}`;
+            document.getElementById('tabSrt').className = `blgr-tab-btn flex-1 py-2.5 text-xs font-bold uppercase rounded-xl transition-all ${m === 'srt' ? 'active' : 'text-slate-500'}`;
+            document.getElementById('textModeBox').classList.toggle('hidden', m !== 'text');
+            document.getElementById('srtModeBox').classList.toggle('hidden', m !== 'srt');
+            document.getElementById('delaySection').classList.toggle('hidden', m !== 'srt');
+        }
+
+        function blgr_loadSRT(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                blgr_srt_list = [];
+                const raw = e.target.result.replace(/\r/g, '').split(/\n\s*\n/);
+                raw.forEach(b => {
+                    const lines = b.trim().split('\n');
+                    if (lines.length >= 3) {
+                        const match = lines[1].match(/((\d+:)?\d+:\d+,\d+) --> ((\d+:)?\d+:\d+,\d+)/);
+                        if (match) blgr_srt_list.push({ t: blgr_timeToSec(match[1]), txt: lines.slice(2).join(' ') });
+                    }
+                });
+                document.getElementById('srtFileLabel').textContent = input.files[0].name;
+                blgr_updateStatus("SUBTITLE STREAM LOADED", "text-emerald-500");
+            };
+            reader.readAsText(input.files[0]);
+        }
+
+        function blgr_timeToSec(s) {
+            const parts = s.split(':'); const sp = parts[parts.length - 1].split(',');
+            const sec = parseInt(sp[0]) + (parseInt(sp[1]) / 1000);
+            const min = parseInt(parts[parts.length - 2]) * 60;
+            const hr = parts.length === 3 ? parseInt(parts[0]) * 3600 : 0;
+            return hr + min + sec;
+        }
+
+        async function blgr_initSynthesis() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            document.getElementById('quotaAlertBox').classList.add('hidden');
+            if(!key) return blgr_updateStatus("KEY REQUIRED", "text-red-500");
+
+            if (blgr_mode === 'text') {
+                const text = document.getElementById('mainTextArea').value.trim();
+                if(!text) return;
+                blgr_toggleLoading(true);
+                try {
+                    const b64 = await blgr_fetch(key, text);
+                    blgr_render(blgr_pcmToWav(blgr_b64(b64), MASTER_FREQ));
+                    blgr_updateStatus("SYNTHESIS COMPLETE", "text-emerald-500");
+                } catch(e) { blgr_err(e); }
+                finally { blgr_toggleLoading(false); }
+            } else {
+                if(blgr_srt_list.length === 0) return;
+                blgr_runBatch(key);
+            }
+        }
+
+        async function blgr_runBatch(key) {
+            blgr_toggleLoading(true);
+            const delay = parseFloat(document.getElementById('delaySlider').value) * 1000;
+            try {
+                let master = new Int16Array(0);
+                let pos = 0;
+                for (let i = 0; i < blgr_srt_list.length; i++) {
+                    const seg = blgr_srt_list[i];
+                    blgr_updateStatus(`SYNCING BLOCK ${i+1}...`, "text-indigo-500");
+                    const gap = seg.t - pos;
+                    if (gap > 0) {
+                        master = blgr_merge(master, new Int16Array(Math.floor(gap * MASTER_FREQ)));
+                        pos += gap;
+                    }
+                    const b64 = await blgr_fetch(key, seg.txt);
+                    const current = blgr_b64(b64);
+                    master = blgr_merge(master, current);
+                    pos += (current.length / MASTER_FREQ);
+                    if (i < blgr_srt_list.length - 1) await new Promise(r => setTimeout(r, delay));
+                }
+                blgr_render(blgr_pcmToWav(master, MASTER_FREQ));
+                blgr_updateStatus("BATCH SYNC SUCCESS", "text-emerald-500");
+            } catch(e) { blgr_err(e); }
+            finally { blgr_toggleLoading(false); }
+        }
+
+        async function blgr_fetch(key, txt, r = 5) {
+            const m = document.getElementById('engineSelect').value;
+            const v = document.getElementById('voiceChoice').value;
+            const t = parseFloat(document.getElementById('tempSlider').value);
+            const s = document.getElementById('styleChoice').value === 'custom' ? document.getElementById('customStyleInput').value : document.getElementById('styleChoice').value;
+            for (let i = 0; i < r; i++) {
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${key}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: `TASK: Read verbatim in a ${s} style. TEXT: ${txt}` }] }],
+                            generationConfig: { responseModalities: ["AUDIO"], temperature: t, speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: v } } } }
+                        })
+                    });
+                    const d = await res.json();
+                    if(!res.ok) throw new Error(d.error?.message || "Internal Failure");
+                    return d.candidates[0].content.parts.find(p => p.inlineData).inlineData.data;
+                } catch(e) {
+                    if(i === r - 1) throw e;
+                    const w = Math.min((e.message.includes("quota") ? 10000 : 2000) * Math.pow(1.5, i), 15000);
+                    blgr_updateStatus(`LINK RETRY IN ${Math.round(w/1000)}s`, "text-amber-500");
+                    await new Promise(r => setTimeout(r, w));
+                }
+            }
+        }
+
+        function blgr_err(e) {
+            blgr_updateStatus("PROCESS ERROR", "text-red-500");
+            if (e.message.includes("limit: 0")) document.getElementById('quotaAlertBox').classList.remove('hidden');
+            else alert("Cloud Update: " + e.message);
+        }
+
+        function blgr_b64(b) {
+            const raw = atob(b.replace(/\s/g, ''));
+            const res = new Int16Array(new ArrayBuffer(raw.length));
+            const bytes = new Uint8Array(res.buffer);
+            for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+            return res;
+        }
+
+        function blgr_merge(b1, b2) {
+            const r = new Int16Array(b1.length + b2.length);
+            r.set(b1); r.set(b2, b1.length);
+            return r;
+        }
+
+        function blgr_pcmToWav(pcm, rate) {
+            const h = new ArrayBuffer(44); const v = new DataView(h);
+            const w = (o, str) => { for(let i=0; i<str.length; i++) v.setUint8(o+i, str.charCodeAt(i)); };
+            w(0, 'RIFF'); v.setUint32(4, 36 + pcm.length * 2, true);
+            w(8, 'WAVE'); w(12, 'fmt '); v.setUint32(16, 16, true);
+            v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+            v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+            v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+            w(36, 'data'); v.setUint32(40, pcm.length * 2, true);
+            return new Blob([h, pcm], { type: 'audio/wav' });
+        }
+
+        function blgr_render(blob) {
+            const url = URL.createObjectURL(blob);
+            const p = document.getElementById('audioEngine');
+            const d = document.getElementById('masterDownloadLink');
+            p.src = url; p.load(); 
+            d.href = url; d.download = `Gemini_Studio_${Date.now()}.wav`;
+            document.getElementById('playbackCard').classList.remove('hidden');
+            document.getElementById('playbackCard').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function blgr_updateStatus(m, c) { 
+            const el = document.getElementById('statusMsgUI'); el.textContent = m; 
+            el.className = "text-[10px] font-black uppercase tracking-widest min-h-[16px] " + c; 
+        }
+
+        function blgr_toggleLoading(l) { 
+            const btn = document.getElementById('mainSubmitBtn'); btn.disabled = l;
+            btn.innerHTML = l ? '<div class="blgr-loading-wave"><div class="blgr-wave-bar"></div><div class="blgr-wave-bar"></div><div class="blgr-wave-bar"></div></div>' : 'TRANSFORM TO AUDIO';
+        }
+        function blgr_togglePrompt() { document.getElementById('customPromptBox').classList.toggle('hidden', document.getElementById('styleChoice').value !== 'custom'); }
+        function blgr_refreshUI() {
+            const m = document.getElementById('engineSelect').value;
+            const b = document.getElementById('badgeUI');
+            b.textContent = m.includes('pro') ? "2.5 PRO PREVIEW" : "2.5 FLASH PREVIEW";
+            b.className = `text-[10px] font-black px-4 py-1.5 rounded-full border transition-all duration-300 uppercase ${m.includes('pro') ? 'text-indigo-600 bg-indigo-50 border-indigo-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100'}`;
+        }
+    </script>
+</body>
+</html>
+
