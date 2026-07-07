@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Recapper Pro - Dark Mode Fixed</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                850: '#151e2e',
+                900: '#0f172a',
+                950: '#020617',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    
+    <!-- Google Generative AI SDK -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+
+    <!-- Icons (Lucide) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Padauk:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: transparent; 
+        }
+
+        .my-font { font-family: 'Padauk', 'Inter', sans-serif; }
+        
+        /* FIX: Loader display property logic */
+        .loader {
+            border: 3px solid rgba(0,0,0,0.1);
+            border-bottom-color: currentColor;
+            border-radius: 50%;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        .dark .loader { border-color: rgba(255,255,255,0.1); border-bottom-color: #38bdf8; }
+
+        @keyframes rotation { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .adsense-slot {
+            background: #f8fafc;
+            border: 1px dashed #e2e8f0;
+            text-align: center;
+            padding: 10px;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            margin: 15px 0;
+            border-radius: 12px;
+        }
+        .dark .adsense-slot { background: #0f172a; border-color: #334155; color: #64748b; }
+
+        .input-field {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            transition: all 0.2s;
+        }
+        .dark .input-field {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f1f5f9 !important;
+        }
+        .input-field:focus {
+            border-color: #0f172a !important;
+            box-shadow: 0 0 0 1px #0f172a !important;
+        }
+        .dark .input-field:focus {
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 0 1px #38bdf8 !important;
+        }
+        
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 transition-colors duration-300">
+
+    <div class="w-full max-w-xl mx-auto p-4">
+        
+        <!-- Ad Placement: Top -->
+        <div class="adsense-slot h-20 flex items-center justify-center text-[10px] font-bold uppercase tracking-widest">
+            Advertisement
+        </div>
+
+        <!-- Tool Header -->
+        <div class="text-left mb-8 mt-4 border-b border-slate-100 dark:border-slate-800 pb-6">
+            <h1 class="text-2xl font-black text-slate-900 dark:text-white mb-1 leading-tight">Video Recapper <span class="text-blue-600 dark:text-blue-400">AI Pro</span></h1>
+            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Summarize visual stories from any video.</p>
+        </div>
+
+        <!-- Configuration Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+            <div class="group">
+                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">1. Gemini API Access</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                        <i data-lucide="key" class="w-4 h-4"></i>
+                    </div>
+                    <input type="password" id="apiKeyInput" 
+                        class="w-full pl-10 pr-4 py-3 input-field text-sm rounded-xl outline-none" 
+                        placeholder="Enter API Key">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">2. Output Language</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                        <i data-lucide="languages" class="w-4 h-4"></i>
+                    </div>
+                    <select id="languageSelect" class="w-full pl-10 pr-4 py-3 input-field text-sm rounded-xl outline-none appearance-none cursor-pointer">
+                        <option value="Burmese">Burmese (မြန်မာ)</option>
+                        <option value="English" selected>English</option>
+                        <option value="Japanese">Japanese</option>
+                        <option value="Korean">Korean</option>
+                        <option value="Thai">Thai</option>
+                    </select>
+                    <div class="absolute right-3 top-3.5 pointer-events-none text-slate-400">
+                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Box -->
+        <div class="mb-8">
+            <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">3. Select Video Source</label>
+            <div class="relative group">
+                <input type="file" id="videoInput" accept="video/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <div id="dropZone" class="w-full h-40 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50 flex flex-col items-center justify-center transition-all group-hover:border-blue-500 dark:group-hover:border-blue-400 group-hover:bg-slate-50 dark:group-hover:bg-slate-900">
+                    
+                    <div id="uploadPrompt" class="text-center p-4 fade-in">
+                        <div class="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                            <i data-lucide="clapperboard" class="w-6 h-6 text-blue-500"></i>
+                        </div>
+                        <p class="text-xs text-slate-700 dark:text-slate-300 font-bold">Upload Video File</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Supports MP4, MOV, etc. (Up to 2GB)</p>
+                    </div>
+                    
+                    <div id="videoPreviewContainer" class="hidden w-full h-full p-2 relative fade-in">
+                        <video id="videoPreview" class="w-full h-full object-cover rounded-xl" controls></video>
+                        <button id="removeVideoBtn" class="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg shadow-lg transition-all z-20">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                        <div id="sizeBadge" class="absolute bottom-4 left-4 bg-slate-900/80 backdrop-blur text-white text-[10px] px-3 py-1 rounded-full font-bold border border-white/10">
+                            0 MB
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Tracking -->
+        <div id="progressContainer" class="hidden mb-8 fade-in">
+            <div class="flex justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest">
+                <span id="progressStatus">Uploading...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden shadow-inner">
+                <div id="progressBar" class="bg-blue-600 dark:bg-blue-500 h-full w-0 transition-all duration-300 relative">
+                    <div class="absolute inset-0 bg-white/20 animate-pulse"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generation Trigger -->
+        <button id="generateBtn" 
+            class="w-full py-4 px-6 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white text-sm font-black rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 shadow-xl shadow-blue-500/10 dark:shadow-none">
+            <span id="btnText">GENERATE AI RECAP</span>
+            <i data-lucide="sparkles" id="btnIcon" class="w-4 h-4"></i>
+            <!-- FIX: Added 'hidden' and removed 'display: inline-block' dependency from CSS -->
+            <span id="loadingSpinner" class="loader w-4 h-4 hidden"></span>
+        </button>
+
+        <!-- Output Result Section -->
+        <div id="resultSection" class="hidden mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 fade-in">
+            <div class="flex items-center justify-between mb-5">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-6 bg-green-500 rounded-full"></div>
+                    <h3 class="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight">AI Generated Story</h3>
+                </div>
+                <button onclick="copyText()" class="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black hover:bg-slate-900 hover:text-white dark:hover:bg-blue-600 transition-all uppercase tracking-widest flex items-center gap-2">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    Copy Text
+                </button>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-[24px] shadow-inner">
+                <div id="outputContent" class="my-font prose prose-slate dark:prose-invert prose-sm max-w-none text-slate-700 dark:text-slate-300 leading-relaxed text-base">
+                    <!-- Recap content here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Handling -->
+        <div id="errorMessage" class="hidden mt-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs rounded-xl border border-red-100 dark:border-red-900/30 flex items-start gap-3 fade-in">
+            <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+            <span id="errorText" class="font-bold"></span>
+        </div>
+
+        <!-- Educational Footer Section -->
+        <div class="mt-12 pt-8 border-t border-slate-100 dark:border-slate-800">
+            <h4 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5">Getting Started</h4>
+            <div class="space-y-4">
+                <div class="flex gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                    <span class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black text-xs">01</span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+                        Obtain your <a href="https://aistudio.google.com/" target="_blank" class="text-blue-600 dark:text-blue-400 underline font-bold">Gemini API Key</a> from Google AI Studio.
+                    </p>
+                </div>
+                <div class="flex gap-4 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                    <span class="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black text-xs">02</span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+                        Select your video file and pick the preferred language for the final output.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ad Placement: Bottom -->
+        <div class="adsense-slot h-32 flex items-center justify-center mt-8 text-[10px] font-bold uppercase tracking-widest">
+            Advertisement
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        lucide.createIcons();
+
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const langSelect = document.getElementById('languageSelect');
+        const videoInput = document.getElementById('videoInput');
+        const uploadPrompt = document.getElementById('uploadPrompt');
+        const videoPreviewContainer = document.getElementById('videoPreviewContainer');
+        const videoPreview = document.getElementById('videoPreview');
+        const removeVideoBtn = document.getElementById('removeVideoBtn');
+        const sizeBadge = document.getElementById('sizeBadge');
+        const generateBtn = document.getElementById('generateBtn');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressStatus = document.getElementById('progressStatus');
+        const progressPercent = document.getElementById('progressPercent');
+        const resultSection = document.getElementById('resultSection');
+        const outputContent = document.getElementById('outputContent');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        
+        let selectedFile = null;
+        const UPLOAD_THRESHOLD = 15 * 1024 * 1024; // 15MB
+
+        // Auto-load saved key
+        window.onload = () => {
+            const saved = localStorage.getItem('gemini_recap_key');
+            if(saved) apiKeyInput.value = saved;
+        }
+
+        videoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const MAX_SIZE = 2 * 1024 * 1024 * 1024; // 2GB
+                if (file.size > MAX_SIZE) {
+                    showError("File size exceeds 2GB limit.");
+                    return;
+                }
+                selectedFile = file;
+                const sizeGB = file.size > 1024*1024*1024;
+                sizeBadge.textContent = sizeGB 
+                    ? (file.size / (1024*1024*1024)).toFixed(2) + " GB" 
+                    : (file.size / (1024*1024)).toFixed(1) + " MB";
+                
+                uploadPrompt.classList.add('hidden');
+                videoPreviewContainer.classList.remove('hidden');
+                videoPreview.src = URL.createObjectURL(file);
+                hideError();
+            }
+        });
+
+        removeVideoBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            selectedFile = null;
+            videoInput.value = '';
+            videoPreview.src = '';
+            videoPreviewContainer.classList.add('hidden');
+            uploadPrompt.classList.remove('hidden');
+            resultSection.classList.add('hidden');
+            progressContainer.classList.add('hidden');
+        });
+
+        async function uploadToGemini(file, apiKey) {
+            updateProgress(5, "Initializing resumable upload...");
+            progressContainer.classList.remove('hidden');
+            const baseUrl = `https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`;
+            
+            const startResponse = await fetch(baseUrl, {
+                method: 'POST',
+                headers: {
+                    'X-Goog-Upload-Protocol': 'resumable',
+                    'X-Goog-Upload-Command': 'start',
+                    'X-Goog-Upload-Header-Content-Length': file.size.toString(),
+                    'X-Goog-Upload-Header-Content-Type': file.type || 'video/mp4',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ file: { display_name: "media_" + Date.now() } })
+            });
+
+            if(!startResponse.ok) throw new Error("Upload initialization failed.");
+
+            const uploadUrl = startResponse.headers.get('x-goog-upload-url');
+            updateProgress(20, "Streaming data to Google Cloud...");
+
+            const uploadResponse = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Length': file.size.toString(),
+                    'X-Goog-Upload-Offset': '0',
+                    'X-Goog-Upload-Command': 'upload, finalize',
+                },
+                body: file
+            });
+
+            const uploadResult = await uploadResponse.json();
+            return await waitForActive(uploadResult.file.name, apiKey);
+        }
+
+        async function waitForActive(fileName, apiKey) {
+            updateProgress(75, "AI is indexing frames...");
+            while (true) {
+                await new Promise(r => setTimeout(r, 4000));
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`);
+                const data = await res.json();
+                if (data.state === "ACTIVE") return data;
+                if (data.state === "FAILED") throw new Error("Video analysis process failed.");
+            }
+        }
+
+        function updateProgress(percent, status) {
+            progressBar.style.width = `${percent}%`;
+            progressPercent.textContent = `${percent}%`;
+            progressStatus.textContent = status;
+        }
+
+        generateBtn.addEventListener('click', async () => {
+            const apiKey = apiKeyInput.value.trim();
+            const targetLang = langSelect.value;
+
+            if (!apiKey) { showError("Please provide your API Key."); return; }
+            if (!selectedFile) { showError("Please upload a video file first."); return; }
+
+            localStorage.setItem('gemini_recap_key', apiKey);
+            setLoading(true);
+            hideError();
+            resultSection.classList.add('hidden');
+
+            try {
+                const genAI = new GoogleGenerativeAI(apiKey);
+                // Use 2.5 flash preview 09-2025 for best video analysis
+                const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-09-2025" });
+                const prompt = `System Instructions: You are a world-class professional video content recapper. Analyze the visual sequence carefully. 
+Task: Write an engaging, detailed, and professional storytelling recap of this video in ${targetLang} language. 
+Structure: Clear overview, key highlights, and a meaningful conclusion. Use bold text for key terms.`;
+
+                let parts = [prompt];
+
+                if (selectedFile.size < UPLOAD_THRESHOLD) {
+                    updateProgress(40, "Directly processing file...");
+                    progressContainer.classList.remove('hidden');
+                    const base64 = await new Promise(r => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => r(reader.result.split(',')[1]);
+                        reader.readAsDataURL(selectedFile);
+                    });
+                    parts.push({ inlineData: { data: base64, mimeType: selectedFile.type || 'video/mp4' } });
+                } else {
+                    const fileData = await uploadToGemini(selectedFile, apiKey);
+                    parts.push({ fileData: { mimeType: fileData.mimeType, fileUri: fileData.uri } });
+                }
+
+                updateProgress(90, "AI is crafting your story...");
+                const result = await model.generateContent(parts);
+                const text = result.response.text();
+
+                outputContent.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+                resultSection.classList.remove('hidden');
+                resultSection.scrollIntoView({ behavior: 'smooth' });
+                updateProgress(100, "Recap Complete!");
+
+            } catch (err) {
+                console.error(err);
+                showError(err.message || "An unexpected error occurred during processing.");
+            } finally {
+                setLoading(false);
+                setTimeout(() => progressContainer.classList.add('hidden'), 3000);
+            }
+        });
+
+        // FIXED: setLoading logic with robust hidden handling
+        function setLoading(s) {
+            generateBtn.disabled = s;
+            btnText.textContent = s ? "AI PROCESSING..." : "GENERATE AI RECAP";
+            if (s) {
+                loadingSpinner.classList.remove('hidden');
+                loadingSpinner.classList.add('inline-block');
+                btnIcon.classList.add('hidden');
+            } else {
+                loadingSpinner.classList.add('hidden');
+                loadingSpinner.classList.remove('inline-block');
+                btnIcon.classList.remove('hidden');
+            }
+        }
+
+        function showError(m) { errorMessage.classList.remove('hidden'); errorText.textContent = m; }
+        function hideError() { errorMessage.classList.add('hidden'); }
+        
+        window.copyText = () => {
+            const rawText = outputContent.innerText;
+            navigator.clipboard.writeText(rawText).then(() => {
+                const btn = document.querySelector('button[onclick="copyText()"]');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-green-500"></i> COPIED!';
+                setTimeout(() => btn.innerHTML = originalHtml, 2000);
+            });
+        };
+    </script>
+</body>
+</html>
+
