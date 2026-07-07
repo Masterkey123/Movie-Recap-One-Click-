@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcript AI Studio - Dark Mode Fixed</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                850: '#151e2e',
+                900: '#0f172a',
+                950: '#020617',
+              }
+            },
+            fontFamily: {
+              sans: ['Plus Jakarta Sans', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Dark Mode Init -->
+    <script>
+      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+    </script>
+
+    <style>
+        body { background-color: transparent; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 12px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; }
+        
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .loader {
+            border: 3px solid #e2e8f0;
+            border-top: 3px solid #0f172a;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 0.8s linear infinite;
+        }
+        .dark .loader {
+            border-color: #334155;
+            border-top-color: #38bdf8;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .ad-slot {
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+            width: 100%;
+        }
+        .dark .ad-slot {
+            background-color: #0f172a;
+            border-color: #334155;
+            color: #64748b;
+        }
+
+        /* Tab Styles */
+        .tab-active {
+            background-color: #0f172a;
+            color: white;
+        }
+        .dark .tab-active {
+            background-color: #38bdf8; /* Sky 400 */
+            color: #0f172a;
+        }
+        
+        .tab-inactive {
+            background-color: transparent;
+            color: #64748b;
+        }
+        .dark .tab-inactive {
+            color: #94a3b8;
+        }
+        
+        .tab-inactive:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        .dark .tab-inactive:hover {
+            background-color: #1e293b;
+            color: #f1f5f9;
+        }
+    </style>
+</head>
+<body class="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <main class="flex-grow py-6 px-4 sm:px-6">
+        <div class="max-w-3xl mx-auto space-y-8">
+            
+            <!-- Header (Toggle Removed) -->
+            <div class="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-6">
+                <div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                        Transcript <span class="text-blue-600 dark:text-blue-400">AI Studio</span>
+                    </h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Video to Text Engine</p>
+                </div>
+            </div>
+
+            <!-- Ad Placement: Top -->
+            <div class="ad-slot h-24">
+                <span>[ Advertisement - Top Banner ]</span>
+            </div>
+
+            <!-- Main App Card -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-none rounded-[24px] p-6 md:p-8 relative transition-colors duration-300">
+                <div class="space-y-8">
+                    
+                    <!-- 1. API Key Section -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-5 h-5 rounded bg-slate-900 dark:bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">1</span>
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">API Access</label>
+                        </div>
+                        
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="relative flex-grow group">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="ph-duotone ph-key text-slate-400 dark:text-slate-500 text-lg"></i>
+                                </div>
+                                <input type="password" id="apiKey" placeholder="Paste your Gemini API Key" 
+                                    class="w-full pl-11 pr-10 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-semibold text-slate-800 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all shadow-sm"
+                                    onblur="fetchModels()">
+                                <button onclick="toggleKeyVisibility()" class="absolute right-4 top-3.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300">
+                                    <i class="ph ph-eye" id="keyIcon"></i>
+                                </button>
+                            </div>
+                            <button onclick="fetchModels()" class="bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white px-6 py-3.5 rounded-2xl text-sm font-bold shadow-lg shadow-slate-200 dark:shadow-none transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                                <i class="ph-bold ph-plugs"></i>
+                                <span>Load Models</span>
+                            </button>
+                        </div>
+                        
+                        <div id="modelBox" class="hidden mt-3 fade-in">
+                            <div class="relative">
+                                <i class="ph-duotone ph-cpu absolute left-4 top-4 text-slate-400"></i>
+                                <select id="modelSelect" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none cursor-pointer shadow-sm"></select>
+                                <i class="ph-bold ph-caret-down absolute right-4 top-4 text-slate-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Upload Section -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-5 h-5 rounded bg-slate-900 dark:bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">2</span>
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Media Upload</label>
+                        </div>
+
+                        <div id="dropZone" class="relative border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-3xl p-10 text-center bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800 hover:border-blue-400 dark:hover:border-blue-500 transition-all cursor-pointer group">
+                            <input type="file" id="mediaInput" accept="video/*,audio/*" class="hidden">
+                            <div id="idleView">
+                                <div class="w-16 h-16 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-slate-100 dark:border-slate-700 group-hover:scale-110 transition-transform">
+                                    <i class="ph-duotone ph-cloud-arrow-up text-3xl text-blue-500"></i>
+                                </div>
+                                <p class="text-sm font-bold text-slate-800 dark:text-white">Click or drag media file here</p>
+                                <p class="text-xs text-slate-400 dark:text-slate-500 mt-1">MP4, MP3, WAV (Max 2GB)</p>
+                            </div>
+                            <div id="fileView" class="hidden fade-in">
+                                <i id="fileIcon" class="ph-fill ph-file-video text-3xl text-slate-900 dark:text-white mb-3"></i>
+                                <p id="selectedFileName" class="text-sm font-bold text-slate-900 dark:text-white truncate max-w-xs mx-auto"></p>
+                                <p id="selectedFileSize" class="text-[10px] text-slate-500 dark:text-slate-400 uppercase mt-1"></p>
+                                <button onclick="resetFile(event)" class="mt-4 px-4 py-1.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 text-xs font-bold hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors">Remove File</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Language Selection -->
+                    <div id="translateBox" class="hidden fade-in grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-850 p-6 rounded-3xl border border-slate-100 dark:border-slate-800">
+                        <!-- Source Language -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <i class="ph-bold ph-microphone"></i> Audio Language
+                            </label>
+                            <div class="relative">
+                                <select id="sourceLanguage" class="w-full pl-4 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none cursor-pointer shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="auto">Auto-detect Language</option>
+                                    <option value="English">English</option>
+                                    <option value="Burmese">Burmese (မြန်မာဘာသာ)</option>
+                                    <option value="Thai">Thai (ไทย)</option>
+                                    <option value="Chinese">Chinese (中文)</option>
+                                    <option value="Japanese">Japanese (日本語)</option>
+                                    <option value="Korean">Korean (한국어)</option>
+                                </select>
+                                <i class="ph-bold ph-caret-down absolute right-3 top-3.5 text-slate-400"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Target Language -->
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                                <i class="ph-bold ph-translate"></i> Output Language
+                            </label>
+                            <div class="relative">
+                                <select id="targetLanguage" class="w-full pl-4 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-slate-200 outline-none appearance-none cursor-pointer shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="original">Same as Audio</option>
+                                    <option value="English">English</option>
+                                    <option value="Burmese">Burmese (မြန်မာဘာသာ)</option>
+                                    <option value="Thai">Thai (ไทย)</option>
+                                    <option value="Chinese">Chinese (中文)</option>
+                                    <option value="Japanese">Japanese (日本語)</option>
+                                    <option value="Korean">Korean (한국어)</option>
+                                    <option value="Spanish">Spanish (Español)</option>
+                                    <option value="French">French (Français)</option>
+                                </select>
+                                <i class="ph-bold ph-caret-down absolute right-3 top-3.5 text-slate-400"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button id="mainBtn" onclick="runTranscription()" disabled
+                        class="group w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:text-slate-300 dark:disabled:text-slate-600 text-white font-bold py-5 rounded-3xl shadow-xl dark:shadow-none transition-all transform active:scale-[0.98] flex items-center justify-center gap-3">
+                        <span>START PROCESSING</span>
+                        <i class="ph-bold ph-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                    
+                    <!-- Ad Placement: Mid-App -->
+                    <div class="ad-slot h-20">
+                        <span>[ Advertisement - Mid Content ]</span>
+                    </div>
+
+                    <div id="statusContainer" class="hidden text-center fade-in">
+                        <div class="flex items-center justify-center gap-3 bg-slate-50 dark:bg-slate-800 py-3 rounded-full inline-flex px-6 border border-slate-100 dark:border-slate-700">
+                            <div class="loader w-4 h-4 border-2"></div>
+                            <p id="statusMsg" class="text-xs font-bold text-slate-600 dark:text-slate-300 tracking-tight">Initializing...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="errorUI" class="hidden mt-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-2xl flex items-start gap-3 text-red-600 dark:text-red-400 text-sm fade-in">
+                    <i class="ph-fill ph-warning-circle text-xl flex-shrink-0 mt-0.5"></i>
+                    <p id="errorTxt" class="font-medium"></p>
+                </div>
+
+                <!-- Result Section -->
+                <div id="outputUI" class="hidden mt-10 space-y-4 fade-in border-t border-slate-100 dark:border-slate-800 pt-8">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900 dark:text-white">Output Result</h3>
+                            <p id="resultLangLabel" class="text-xs font-bold text-emerald-500 uppercase tracking-wide">Success</p>
+                        </div>
+                        <button onclick="downloadCurrent()" class="flex items-center gap-2 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 px-5 py-2.5 rounded-full text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                            <i class="ph-bold ph-download-simple"></i>
+                            <span id="downloadBtnText">Download .SRT</span>
+                        </button>
+                    </div>
+                    
+                    <div class="relative group rounded-3xl overflow-hidden shadow-inner border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+                        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-850 p-2 border-b border-slate-100 dark:border-slate-800">
+                            <div class="flex gap-1 p-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
+                                <button onclick="switchTab('srt')" id="tab-srt" class="text-[10px] font-bold px-4 py-2 rounded-lg tab-active transition-all">SRT</button>
+                                <button onclick="switchTab('transcript')" id="tab-transcript" class="text-[10px] font-bold px-4 py-2 rounded-lg tab-inactive transition-all">Transcript</button>
+                                <button onclick="switchTab('prompt')" id="tab-prompt" class="text-[10px] font-bold px-4 py-2 rounded-lg tab-inactive transition-all">TTS Prompt</button>
+                            </div>
+                            <div class="pr-4"><i class="ph-bold ph-code text-slate-300 dark:text-slate-600"></i></div>
+                        </div>
+                        <textarea id="resultArea" readonly class="w-full h-80 p-6 bg-white dark:bg-slate-950 text-slate-600 dark:text-slate-300 font-mono text-xs border-0 focus:ring-0 resize-none custom-scrollbar"></textarea>
+                        <button onclick="copyResult(event)" class="absolute bottom-6 right-6 p-3 bg-slate-900 dark:bg-blue-600 text-white rounded-xl shadow-lg active:scale-90 transition-all">
+                            <i class="ph-bold ph-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Sections -->
+            <div class="grid md:grid-cols-2 gap-8 pt-6 border-t border-slate-100 dark:border-slate-800">
+                <section class="space-y-4">
+                    <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Key Features</h2>
+                    <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+                        <li class="flex gap-3"><i class="ph-fill ph-check-circle text-emerald-500 text-lg"></i> Language-specific Precise AI Transcription</li>
+                        <li class="flex gap-3"><i class="ph-fill ph-translate text-blue-500 text-lg"></i> Context-Aware Multi-Language Translation</li>
+                        <li class="flex gap-3"><i class="ph-fill ph-microphone-stage text-purple-500 text-lg"></i> Specialized Voice Tone Prompts for TTS</li>
+                    </ul>
+                </section>
+                <section class="space-y-4">
+                    <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">How to Use</h2>
+                    <div class="space-y-3 text-xs font-medium text-slate-500 dark:text-slate-500">
+                        <p><span class="font-bold text-slate-900 dark:text-slate-300">1.</span> Enter your Gemini API key and click "Load Models".</p>
+                        <p><span class="font-bold text-slate-900 dark:text-slate-300">2.</span> Upload your media file and select the audio language.</p>
+                        <p><span class="font-bold text-slate-900 dark:text-slate-300">3.</span> Choose your target language and click "Start Processing".</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Ad Placement: Bottom -->
+            <div class="ad-slot h-32">
+                <span>[ Advertisement - Bottom Square ]</span>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        const mediaInput = document.getElementById('mediaInput');
+        const dropZone = document.getElementById('dropZone');
+        const mainBtn = document.getElementById('mainBtn');
+        const apiKeyInput = document.getElementById('apiKey');
+        const resultArea = document.getElementById('resultArea');
+        const modelSelect = document.getElementById('modelSelect');
+        const targetLanguage = document.getElementById('targetLanguage');
+        const sourceLanguage = document.getElementById('sourceLanguage');
+        const translateBox = document.getElementById('translateBox');
+        
+        let selectedFile = null;
+        let generatedData = { srt: "", transcript: "", prompt: "" };
+        let currentTab = 'srt';
+
+        // --- Theme Logic Removed (Handled by Parent Theme) ---
+
+        function toggleKeyVisibility() {
+            const icon = document.getElementById('keyIcon');
+            apiKeyInput.type = apiKeyInput.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('ph-eye');
+            icon.classList.toggle('ph-eye-slash');
+        }
+
+        dropZone.onclick = (e) => { if(e.target.closest('button')) return; mediaInput.click(); }; 
+        mediaInput.onchange = (e) => handleFile(e.target.files[0]);
+
+        function handleFile(file) {
+            if (!file) return;
+            
+            // 2GB limit check (2 * 1024 * 1024 * 1024 bytes)
+            const MAX_SIZE = 2 * 1024 * 1024 * 1024;
+            if (file.size > MAX_SIZE) {
+                alert("File is too large! Maximum allowed size is 2GB.");
+                resetFile(new Event('click'));
+                return;
+            }
+
+            selectedFile = file;
+            document.getElementById('idleView').classList.add('hidden');
+            document.getElementById('fileView').classList.remove('hidden');
+            document.getElementById('selectedFileName').textContent = file.name;
+            
+            // Format size properly
+            if (file.size > 1024 * 1024 * 1024) {
+                document.getElementById('selectedFileSize').textContent = (file.size / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+            } else {
+                document.getElementById('selectedFileSize').textContent = (file.size / (1024 * 1024)).toFixed(2) + " MB";
+            }
+            
+            const icon = document.getElementById('fileIcon');
+            icon.className = file.type.startsWith('audio/') ? "ph-fill ph-file-audio text-3xl text-purple-500" : "ph-fill ph-file-video text-3xl text-blue-500";
+            translateBox.classList.remove('hidden');
+            checkReadyState();
+        }
+
+        function resetFile(e) {
+            if(e && e.stopPropagation) e.stopPropagation();
+            selectedFile = null;
+            mediaInput.value = '';
+            document.getElementById('idleView').classList.remove('hidden');
+            document.getElementById('fileView').classList.add('hidden');
+            translateBox.classList.add('hidden');
+            checkReadyState();
+        }
+
+        function checkReadyState() {
+            mainBtn.disabled = !(selectedFile && apiKeyInput.value.trim());
+        }
+
+        apiKeyInput.oninput = checkReadyState;
+
+        async function fetchModels() {
+            const key = apiKeyInput.value.trim();
+            if (!key) return;
+            try {
+                document.getElementById('modelBox').classList.remove('hidden');
+                modelSelect.innerHTML = '<option value="" disabled selected>Loading models...</option>';
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
+                const data = await res.json();
+                if (data.error) throw new Error(data.error.message);
+                const validModels = data.models.filter(m => m.supportedGenerationMethods.includes('generateContent'));
+                modelSelect.innerHTML = validModels.map(m => `<option value="${m.name}">${m.displayName || m.name}</option>`).join('');
+                if(validModels.some(m => m.name.includes('flash'))) {
+                    modelSelect.value = validModels.find(m => m.name.includes('flash')).name;
+                }
+            } catch (err) { modelSelect.innerHTML = `<option value="" disabled selected>Error: ${err.message}</option>`; }
+        }
+
+        async function runTranscription() {
+            const key = apiKeyInput.value.trim();
+            if (!modelSelect.value) { await fetchModels(); if (!modelSelect.value) return alert("Select a model."); }
+            const model = modelSelect.value;
+            const srcLang = sourceLanguage.value;
+            const targetLang = targetLanguage.value;
+            
+            setLoading(true, "Uploading media...");
+            hideError();
+            document.getElementById('outputUI').classList.add('hidden');
+            try {
+                const fileUri = await performUpload(key, selectedFile);
+                setLoading(true, "AI Analyzing Content...");
+                await waitForActive(key, fileUri);
+                setLoading(true, targetLang === 'original' ? `Transcribing (${srcLang})...` : `Translating ${srcLang} to ${targetLang}...`);
+                await generateContent(key, fileUri, model, srcLang, targetLang);
+                switchTab('srt');
+                document.getElementById('outputUI').classList.remove('hidden');
+                document.getElementById('outputUI').scrollIntoView({ behavior: 'smooth' });
+            } catch (err) { showError(err.message); } finally { setLoading(false); }
+        }
+
+        async function performUpload(key, file) {
+            const startRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${key}`, {
+                method: 'POST',
+                headers: { 'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start', 'X-Goog-Upload-Header-Content-Length': file.size.toString(), 'X-Goog-Upload-Header-Content-Type': file.type || 'application/octet-stream', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ file: { display_name: "media_" + Date.now() } })
+            });
+            const uploadUrl = startRes.headers.get('X-Goog-Upload-URL');
+            const uploadRes = await fetch(uploadUrl, { method: 'POST', headers: { 'X-Goog-Upload-Command': 'upload, finalize', 'X-Goog-Upload-Offset': '0', 'Content-Length': file.size.toString() }, body: file });
+            const data = await uploadRes.json();
+            return data.file.uri;
+        }
+
+        async function waitForActive(key, uri) {
+            const fileId = uri.split('/').pop();
+            let state = 'PROCESSING';
+            let attempts = 0;
+            while (state !== 'ACTIVE' && attempts < 60) {
+                await new Promise(r => setTimeout(r, 2000));
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/files/${fileId}?key=${key}`);
+                const data = await res.json();
+                state = data.state;
+                if (state === 'FAILED') throw new Error("Processing failed.");
+                attempts++;
+            }
+        }
+
+        async function generateContent(key, uri, model, srcLang, targetLang) {
+            const prompt = `System Instructions: You are a professional media analyzer and language expert.
+The provided media file's audio is in [${srcLang === 'auto' ? 'detect automatically' : srcLang}].
+
+Task:
+1. Listen and transcribe/translate the audio into [${targetLang === 'original' ? 'the original language spoken' : targetLang}].
+2. Output a valid SRT string. Format MUST BE: HH:MM:SS,mmm (e.g., 00:00:01,500 --> 00:00:04,200). Use commas for milliseconds.
+3. Provide a full plain text transcript.
+4. Create a specific voice tone prompt for TTS (Text-to-Speech) that matches the mood of the audio.
+
+CRITICAL: If a target language is specified, output ONLY that language. No dual-language subtitles.
+
+JSON Structure:
+{
+  "srt": "strictly formatted srt string",
+  "transcript": "full transcript text",
+  "tts_prompt": "descriptive voice tone prompt"
+}`;
+
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }, { file_data: { mime_type: selectedFile.type, file_uri: uri } }] }],
+                    generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
+                })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            const textResult = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            const parsed = JSON.parse(textResult);
+            generatedData = {
+                srt: parsed.srt,
+                transcript: parsed.transcript,
+                prompt: parsed.tts_prompt
+            };
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            ['srt', 'transcript', 'prompt'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    el.className = 'text-[10px] font-bold px-4 py-2 rounded-lg tab-active transition-all';
+                } else {
+                    el.className = 'text-[10px] font-bold px-4 py-2 rounded-lg tab-inactive transition-all';
+                }
+            });
+            const downloadBtnText = document.getElementById('downloadBtnText');
+            if (tab === 'srt') { resultArea.value = generatedData.srt; downloadBtnText.textContent = "Download .SRT"; }
+            else if (tab === 'transcript') { resultArea.value = generatedData.transcript; downloadBtnText.textContent = "Download .TXT"; }
+            else { resultArea.value = generatedData.prompt; downloadBtnText.textContent = "Download Prompt"; }
+        }
+
+        function setLoading(isLoading, msg = "") {
+            document.getElementById('statusContainer').classList.toggle('hidden', !isLoading);
+            document.getElementById('statusMsg').textContent = msg;
+            mainBtn.disabled = isLoading;
+        }
+
+        function showError(msg) { document.getElementById('errorUI').classList.remove('hidden'); document.getElementById('errorTxt').textContent = msg; }
+        function hideError() { document.getElementById('errorUI').classList.add('hidden'); }
+        
+        function downloadCurrent() {
+            let content = currentTab === 'srt' ? generatedData.srt : (currentTab === 'transcript' ? generatedData.transcript : generatedData.prompt);
+            let ext = currentTab === 'srt' ? ".srt" : ".txt";
+            const blob = new Blob([content], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = (selectedFile ? selectedFile.name.split('.')[0] : "output") + "_" + currentTab + ext;
+            a.click();
+        }
+
+        function copyResult(event) {
+            resultArea.select();
+            document.execCommand('copy');
+            const btn = event.currentTarget;
+            const icon = btn.querySelector('i');
+            icon.className = 'ph-bold ph-check text-green-400';
+            setTimeout(() => icon.className = 'ph-bold ph-copy', 2000);
+        }
+    </script>
+</body>
+</html>
+
